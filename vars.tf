@@ -20,6 +20,7 @@ variable "nic_name" {
 variable "ssh_keys" {
     default = <<EOF
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBVQsTMfA6sxM8jvEt5SmjKEz0VxPDKu00VyivHSKb/6 gene@desktop
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGqvYB/QexitQ3g2xYYP2Cy9P20l69BItmggmVQ47sKu gene@deb13home
 EOF
 }
 
