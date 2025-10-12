@@ -19,7 +19,6 @@ variable "nic_name" {
 # Needed for remote exec
 variable "ssh_keys" {
     default = <<EOF
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBVQsTMfA6sxM8jvEt5SmjKEz0VxPDKu00VyivHSKb/6 gene@desktop
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGqvYB/QexitQ3g2xYYP2Cy9P20l69BItmggmVQ47sKu gene@deb13home
 EOF
 }
@@ -92,6 +91,11 @@ variable "k3s_worker_ip_addresses" {
   default = ["192.168.1.240/24", "192.168.1.241/24", "192.168.1.242/24"]
 }
 
+variable "vm_ips" {
+  type = list(string)
+  default = ["192.168.1.210", "192.168.1.211", "192.168.1.212", "192.168.1.240", "192.168.1.241", "192.168.1.242"]
+}
+
 variable "k3s_node_disk_size" {
   default = "20G"
 }
@@ -102,6 +106,14 @@ variable "k3s_node_disk_storage" {
 
 variable "k3s_template_name" {
   default = "debian12-cloudinit"
+}
+
+variable "private_key_path" {
+  default = "~/.ssh/id_ed25519"
+}
+
+variable "ssh_user" {
+  default = "ansible"
 }
 
 #variable "k3s_ssh_key_file" {

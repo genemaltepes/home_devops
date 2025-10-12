@@ -69,7 +69,7 @@ resource "proxmox_vm_qemu" "k3s_master" {
     }
 }
 
-resource "proxmox_vm_qemu" "k3s_workers" {
+resource "proxmox_vm_qemu" "k3s_worker" {
     count = var.k3s_worker_count
     name = "k3s-worker-${count.index}"
     vmid = var.k3s_worker_vm_ids[count.index]
@@ -140,6 +140,40 @@ resource "proxmox_vm_qemu" "k3s_workers" {
     }
 }
 
+# Controlled delay per VM
+resource "time_sleep" "delay" {
+  count           = 6
+  create_duration = "${10 + count.index * 10}s"
+  depends_on      = [proxmox_vm_qemu.k3s_master, proxmox_vm_qemu.k3s_worker]
+}
+
+resource "null_resource" "update_known_hosts" {
+  # The trigger ensures this resource is re-created every time the VM IPs change.
+  #triggers = {
+  #  vm_ips = join(",", output.vm_ips)
+  #}
+  depends_on = [time_sleep.delay]
+
+  provisioner "local-exec" {
+    # The command will first clean the old entries and then add the new ones.
+    command = <<-EOT
+      known_hosts_file="$HOME/.ssh/known_hosts"
+      
+      # Clear old host keys to avoid host key verification failures.
+      # This example removes all keys associated with any of the IP addresses.
+      for ip in ${join(" ", var.vm_ips)}; do
+        ssh-keygen -R "$ip" -f "$known_hosts_file"
+      done
+
+      # Add new host keys from the re-provisioned VMs.
+      for ip in ${join(" ", var.vm_ips)}; do
+        ssh-keyscan "$ip" >> "$known_hosts_file"
+      done
+    EOT
+    interpreter = ["/bin/bash", "-c"]
+  }
+  
+}
 #data "template_file" "k3s" {
 #  template = file("./templates/k3s.tpl")
 #  vars = {
